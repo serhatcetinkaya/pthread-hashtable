@@ -26,7 +26,6 @@ pthread_mutex_t mutex[MAX_K];
 int ret = -1;
 
 HashTable *hash_init (int N, int M){
-	printf ("hash_init called\n");
 	// contol for validity of N & M values.
 	if ((N % M) != 0){
 		printf("Not valid parameters for hash_init() !!\n");
