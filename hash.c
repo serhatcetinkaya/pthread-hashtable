@@ -1,4 +1,20 @@
+/*
+Copyright (C) 2016  Serhat Çetinkaya serhatcetinkayaa@gmail.com
+										Çağrıbey Güvendik mguvendik@gmail.com
 
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>
+*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
@@ -25,12 +41,10 @@ HashTable *hash_init (int N, int M){
 	for (i = 0; i < N; i++){
 		hp[i].head = NULL;
 		hp[i].lock_number = (i / region_size);
-		//printf("lock_number= %d\n", hp[i].lock_number);
 		hp[i].total_bucket = N;
 	}
 	// initializing mutex locks.
 	for (i = 0; i < lock_num; i++){
-		printf("initializing mutex %d\n", i);
 		pthread_mutex_init(&mutex[i], NULL);
 	}
 
@@ -38,19 +52,15 @@ HashTable *hash_init (int N, int M){
 }
 
 int hash_insert (HashTable *hp, int k, int v){
-	printf ("hash_insert called, k= %d\tv= %d\n",k,v);
 	int size = hp[0].total_bucket;
 	int index = k % size;
-	printf("index= %d\n", index);
 	int lock_num = hp[index].lock_number;
 	// mutex lock for prevention.
 	//--------------------------
 	pthread_mutex_lock(&mutex[lock_num]);
 	//--------------------------
 	if (k < 0){
-		printf("invalid key value !\n");
 		pthread_mutex_unlock(&mutex[lock_num]);
-
 		return ret;
 	}
 
@@ -66,22 +76,17 @@ int hash_insert (HashTable *hp, int k, int v){
 	newNode->next = NULL;
 	// check if there is a collision for insertion and insert the new node.
 	if (hp[index].head == NULL){
-		//-----printf("inserting node with key:%d\tvalue:%d\n", newNode->key, newNode->data);
-		//printf("added\n");
 		hp[index].head = newNode;
 	}else{
 		// check if specified key value is already inserted or not. If inserted abort.
 		while (controlNode){
-			if (/*controlNode->data == v && */controlNode->key == k){
-				//-----printf("specified key value pair already exist !\n");
-				//printf("oooooo\n");
+			if (controlNode->key == k){
+				// if key already exists.
 				pthread_mutex_unlock(&mutex[lock_num]);
 				return ret;
 			}
 			controlNode = controlNode->next;
 		}
-		//-----printf("inserting second node with key:%d\tvalue:%d\n", newNode->key, newNode->data);
-		//printf("added\n");
 		newNode->next = hp[index].head;
 		hp[index].head = newNode;
 	}
@@ -98,31 +103,22 @@ int hash_delete (HashTable *hp, int k) {
 	int index = k % size;
 	int lock_num = hp[index].lock_number;
 	while (x < MAXMAX) x++;
-	printf ("hash_delete called, index= %d k = %d\n",index,k);
 	// mutex lock for prevention.
 	pthread_mutex_lock(&mutex[lock_num]);
 	//--------------------------
-	/*if (k < 0){
-		pthread_mutex_unlock(&mutex[lock_num]);
-		return ret;
-	}*/
 
 	int deleted;
 
 	NODE *prevNode, *currentNode;
 	currentNode = hp[index].head;
 	prevNode = currentNode;
-	//printf("javid\n");
 	if (hp[index].head == NULL){
-		//-----printf("given key is not present in hash table !\n");
-		//printf("serhat\n");
 		pthread_mutex_unlock(&mutex[lock_num]);
 		return ret;
 	}
 
 	while (currentNode != NULL){
 		if (currentNode->key == k){
-
 			if (currentNode == hp[index].head){
 				hp[index].head = currentNode->next;
 				currentNode->next = NULL;
@@ -130,14 +126,10 @@ int hash_delete (HashTable *hp, int k) {
 				prevNode->next = currentNode->next;
 				currentNode->next = NULL;
 			}
-			//free(currentNode);
 			deleted = 1;
 		}
 		prevNode = currentNode;
 		currentNode = currentNode->next;
-	}
-	if (deleted){
-		printf("deleted k=%d\n",k);
 	}
 	// mutex unlock.
 	//--------------------------
@@ -148,7 +140,6 @@ int hash_delete (HashTable *hp, int k) {
 
 
 int hash_get (HashTable *hp, int k, int *vptr){
-	//-----printf ("hash_get called\n");
 	int size = hp[0].total_bucket;
 	int index = k % size;
 	int lock_num = hp[index].lock_number;
@@ -157,7 +148,6 @@ int hash_get (HashTable *hp, int k, int *vptr){
 	pthread_mutex_lock(&mutex[lock_num]);
 	//--------------------------
 	if (k < 0){
-		//-----printf("invalid key value !\n");
 		pthread_mutex_unlock(&mutex[lock_num]);
 		return ret;
 	}
@@ -169,18 +159,14 @@ int hash_get (HashTable *hp, int k, int *vptr){
 
 
 	if (hp[index].head == NULL){
-		//------printf("node for given key is not present in the hash table !\n");
+		// bucket is empty.
 		pthread_mutex_unlock(&mutex[lock_num]);
 		return ret;
 	}
 	while (currentNode != NULL){
 		if (currentNode->key == k){
 			found = 1;
-			//------------------
 			*vptr = currentNode->data;
-			//------------------
-
-			//printf("*vptr:%d\tk=%d\n", (int)(*vptr),k);
 			break;
 		}
 		currentNode = currentNode->next;
@@ -191,19 +177,14 @@ int hash_get (HashTable *hp, int k, int *vptr){
 	//--------------------------
 
 	if (found){
-		printf("node for given key value is found !\n");
-		printf("*index=%d\tvptr:%d\tk=%d\n", index,(int)(*vptr),k);
+		// value is found.
 	}else{
-		printf("node for given key value is not found !\n");
-		printf("*vptr:?\tk=%d\n",k);
 		return ret;
 	}
-
 	return 0;
 }
 
 int hash_destroy (HashTable *hp){
-	//-----printf ("hash_destroy called\n");
 	// initializing size.
 	int size = hp[0].total_bucket;
 	int lock_num = hp[0].lock_number;
@@ -218,12 +199,10 @@ int hash_destroy (HashTable *hp){
 		while (hp[i].head != NULL){
 			freeingNode = hp[i].head;
 			hp[i].head = hp[i].head->next;
-			//-----printf("freeing node\n");
 			free(freeingNode);
 		}
 	}
 	// free the hash table itself.
-	//-----printf("freeing hash table\n");
 	free(hp);
 	for (i = 0; i < lock_num; i++){
 		pthread_mutex_unlock(&mutex[i]);

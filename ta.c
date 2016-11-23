@@ -23,7 +23,7 @@ void *ta_func(void * ptr);
 int main(int argc, char *argv[])
 {
 	int i;
-	//N student threads 
+	//N student threads
 	pthread_t students[N];
 	int student_number[N];
 	//Mutex initiation and state defining
@@ -38,8 +38,8 @@ int main(int argc, char *argv[])
 
 	//TA thread
 	pthread_t ta;
-	
-	
+
+
 	//Create N student thread
 	for(i=0; i<N;i++)
 	{
@@ -47,17 +47,17 @@ int main(int argc, char *argv[])
 		pthread_create(&tpr, NULL, student_func, (void*)i);
 		printf("Student %d is initially waiting\n",i+1);
 	}
-	
+
 	//Create TA thread
 	pthread_create(&ta, NULL, ta_func, (void *) &i);
-	 
+
 
 	return 0;
 }
 void *student_func(void * student_no){
 	int std_no;
 	std_no= (int) student_no;
-	
+
 	pthread_mutex_lock (&mutex[std_no]);
 
 	printf("Student %d has lock and going into TA room\n",std_no );
