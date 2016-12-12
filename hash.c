@@ -1,6 +1,6 @@
 /*
 Copyright (C) 2016  Serhat Çetinkaya serhatcetinkayaa@gmail.com
-		    Çağrıbey Güvendik mguvendik@gmail.com
+		    Çağrıbey Güvendik cagribeyg@gmail.com
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
